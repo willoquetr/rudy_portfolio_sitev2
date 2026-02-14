@@ -1,0 +1,1704 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>Rudy Willoquet — Développeur IA / Logiciel</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070b10'/%3E%3Cpath d='M16 34c10-18 22-18 32 0' stroke='%2366d7ff' stroke-width='4' fill='none'/%3E%3Ccircle cx='32' cy='32' r='4' fill='%23a7f0ff'/%3E%3C/svg%3E" />
+
+  <style>
+    :root{
+      --bg:#070b10;
+      --panel:rgba(8, 14, 22, .72);
+      --stroke:rgba(255,255,255,.08);
+      --txt:#eaf2ff;
+      --muted:rgba(234,242,255,.72);
+      --accent:#66d7ff;
+      --accent2:#a7f0ff;
+      --shadow: 0 18px 60px rgba(0,0,0,.55);
+      --radius: 18px;
+      --radius2: 26px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background:
+        radial-gradient(1200px 800px at 20% 10%, rgba(102,215,255,.10), transparent 60%),
+        radial-gradient(900px 650px at 75% 15%, rgba(167,240,255,.08), transparent 62%),
+        radial-gradient(850px 700px at 50% 85%, rgba(102,215,255,.06), transparent 60%),
+        var(--bg);
+      color:var(--txt);
+      overflow-x:hidden;
+    }
+    body.modal-open{overflow:hidden;}
+    #matrixCanvas{position:fixed;inset:0;z-index:-2;opacity:.22;pointer-events:none;display:none}
+    body.matrix-on #matrixCanvas{display:block;}
+    .grain{
+      position:fixed;inset:-40px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)' opacity='.16'/%3E%3C/svg%3E");
+      mix-blend-mode:overlay;opacity:.20;z-index:-1;pointer-events:none;
+    }
+    a{color:inherit}
+    .wrap{max-width:1100px;margin:0 auto;padding:28px 20px 80px}
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;gap:12px;
+      padding:12px 14px;border:1px solid var(--stroke);
+      border-radius:999px;background:rgba(8,14,22,.52);backdrop-filter: blur(10px);
+      position:sticky;top:14px;z-index:20;
+      box-shadow: 0 10px 30px rgba(0,0,0,.35);
+    }
+    .brand{display:flex;align-items:center;gap:10px;min-width:0}
+    .dot{
+      width:10px;height:10px;border-radius:50%;background:var(--accent);
+      box-shadow:0 0 0 5px rgba(102,215,255,.12), 0 0 22px rgba(102,215,255,.55);
+      flex:0 0 auto;
+    }
+    .brand b{font-weight:750;letter-spacing:.2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .brand span{color:var(--muted);font-size:13px;margin-left:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .btns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+    .btn{
+      display:inline-flex;align-items:center;gap:10px;
+      padding:10px 12px;border-radius:999px;
+      border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      text-decoration:none;font-size:14px;color:var(--txt);
+      transition: transform .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .btn:hover{transform: translateY(-1px);border-color:rgba(102,215,255,.28);background:linear-gradient(180deg, rgba(102,215,255,.12), rgba(255,255,255,.02))}
+    .btn.primary{border-color:rgba(102,215,255,.28);box-shadow:0 0 0 6px rgba(102,215,255,.08);}
+    .btn .k{font-family:var(--mono);font-size:12px;color:var(--muted)}
+    .toggle{cursor:pointer;user-select:none;}
+    .hero{margin-top:70px;display:grid;grid-template-columns: 1.25fr .75fr;gap:18px;align-items:stretch;}
+    @media (max-width: 900px){.hero{grid-template-columns:1fr;gap:14px}}
+    .card{
+      border:1px solid var(--stroke);
+      border-radius:var(--radius2);
+      background:linear-gradient(180deg, rgba(10,18,28,.66), rgba(8,14,22,.56));
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      overflow:hidden;position:relative;
+    }
+    .card::before{content:"";position:absolute;inset:-2px;background: radial-gradient(800px 260px at 40% 0%, rgba(102,215,255,.18), transparent 55%);pointer-events:none;}
+    .heroMain{padding:26px}
+    .tagline{color:var(--muted);font-size:14px;font-family:var(--mono);letter-spacing:.2px;}
+    h1{margin:10px 0 10px;font-size:42px;line-height:1.05;letter-spacing:-.8px;}
+    @media (max-width: 480px){h1{font-size:34px}}
+    .lead{margin:12px 0 0;color:rgba(234,242,255,.86);font-size:16px;line-height:1.6;max-width:70ch;}
+    .pillrow{margin-top:16px;display:flex;flex-wrap:wrap;gap:10px;}
+    .pill{padding:8px 10px;border-radius:999px;border:1px solid rgba(102,215,255,.18);background: rgba(102,215,255,.08);color: rgba(234,242,255,.92);font-size:13px;display:inline-flex;gap:8px;align-items:center;}
+    .pill i{width:8px;height:8px;border-radius:50%;background:rgba(102,215,255,.85);box-shadow:0 0 16px rgba(102,215,255,.55);display:inline-block;}
+    .heroSide{padding:18px}
+    .avatar{border-radius:20px;border:1px solid rgba(102,215,255,.18);background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));overflow:hidden;aspect-ratio: 4 / 5;position:relative;display:flex;align-items:center;justify-content:center;}
+    .avatar img{width:100%;height:100%;object-fit:cover;display:block;opacity:.92;}
+    #avatar3d canvas{width:100% !important;height:100% !important;display:block;}
+    .avatar .placeholder{padding:18px;text-align:center;color:var(--muted);font-size:14px;line-height:1.5;font-family:var(--mono);}
+    .mini{margin-top:12px;border-top:1px solid var(--stroke);padding-top:12px;display:grid;gap:10px;}
+    .mini .row{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;color:rgba(234,242,255,.86);}
+    .mini .row span{color:var(--muted);font-family:var(--mono);font-size:12px}
+    .badge{font-family:var(--mono);font-size:12px;padding:6px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:rgba(234,242,255,.82);white-space:nowrap;}
+    .section{margin-top:20px}
+    .sectionHead{margin:22px 0 12px;display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    .sectionHead h2{margin:0;font-size:18px;letter-spacing:.2px;}
+    .sectionHead p{margin:0;color:var(--muted);font-size:13px;max-width:75ch;}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:12px;border:1px solid var(--stroke);border-radius:var(--radius);background:rgba(8,14,22,.46);backdrop-filter: blur(10px);}
+    .input, .chip{border:1px solid var(--stroke);background:rgba(255,255,255,.03);color:var(--txt);border-radius:999px;padding:10px 12px;font-size:14px;outline:none;}
+    .input{min-width:240px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{cursor:pointer;user-select:none;transition: transform .12s ease, border-color .12s ease, background .12s ease;font-family:var(--mono);font-size:12px;padding:9px 10px;}
+    .chip:hover{transform:translateY(-1px);border-color:rgba(102,215,255,.25)}
+    .chip.active{border-color:rgba(102,215,255,.38);background:rgba(102,215,255,.10);box-shadow:0 0 0 6px rgba(102,215,255,.06);}
+    .grid{margin-top:12px;display:grid;grid-template-columns: repeat(3, minmax(0,1fr));gap:12px;}
+    @media (max-width: 980px){ .grid{grid-template-columns: repeat(2, minmax(0,1fr));} }
+    @media (max-width: 620px){ .grid{grid-template-columns: 1fr;} }
+    .pCard{
+      padding:16px;border-radius:var(--radius);border:1px solid var(--stroke);
+      background:linear-gradient(180deg, rgba(10,18,28,.62), rgba(8,14,22,.52));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.35);
+      cursor:pointer;position:relative;overflow:hidden;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+      min-height: 160px;
+    }
+    .pCard::before{content:"";position:absolute;inset:-2px;background: radial-gradient(520px 180px at 30% 0%, rgba(102,215,255,.14), transparent 55%);opacity:.9;pointer-events:none;}
+    .pCard:hover{transform: translateY(-2px);border-color:rgba(102,215,255,.26);background:linear-gradient(180deg, rgba(102,215,255,.10), rgba(8,14,22,.52));}
+    .pTop{display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+    .pTitle{margin:0;font-size:16px;letter-spacing:.2px}
+    .pSub{margin:6px 0 0;color:var(--muted);font-size:13px;line-height:1.5}
+    .tags{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+    .tag{padding:6px 8px;border-radius:999px;border:1px solid rgba(102,215,255,.16);background:rgba(102,215,255,.08);font-family:var(--mono);font-size:12px;color:rgba(234,242,255,.86);}
+    .tag.private{border-color:rgba(255,107,107,.22);background:rgba(255,107,107,.08);}
+    .tag.doc{border-color:rgba(167,240,255,.22);background:rgba(167,240,255,.07);}
+    .modalBack{position:fixed;inset:0;z-index:50;background: rgba(0,0,0,.65);display:none;align-items:flex-start;justify-content:center;padding:18px;}
+    .modalBack.open{display:flex}
+    .modal{
+      width:min(980px, 100%);
+      max-height:calc(100vh - 36px);
+      border-radius: 22px;
+      border:1px solid rgba(255,255,255,.10);
+      background:linear-gradient(180deg, rgba(8,14,22,.86), rgba(8,14,22,.76));
+      backdrop-filter: blur(12px);
+      box-shadow: 0 30px 80px rgba(0,0,0,.65);
+      overflow:hidden;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+    }
+    .mHead{padding:16px 16px 12px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;border-bottom:1px solid var(--stroke);background: radial-gradient(900px 260px at 40% 0%, rgba(102,215,255,.16), transparent 55%);}
+    .mHead h3{margin:0;font-size:18px}
+    .closeBtn{border:1px solid var(--stroke);background:rgba(255,255,255,.04);color:var(--txt);border-radius:999px;padding:9px 10px;cursor:pointer;font-family:var(--mono);font-size:12px;}
+    .mBody{
+      padding:16px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:14px;
+      overflow:auto;
+      flex:1;
+      min-height:0;
+    }
+    @media (max-width: 860px){ .mBody{grid-template-columns:1fr;} }
+    .mBlock{border:1px solid var(--stroke);border-radius:18px;background:rgba(255,255,255,.03);padding:14px;}
+    .mBlock h4{margin:0 0 8px;font-size:14px;color:rgba(234,242,255,.92)}
+    .mBlock p{margin:0;color:rgba(234,242,255,.82);line-height:1.6;font-size:14px}
+    .bullets{margin:10px 0 0;padding-left:18px;color:rgba(234,242,255,.82);line-height:1.7;font-size:14px}
+    .shots{display:grid;grid-template-columns: repeat(2, minmax(0,1fr));gap:10px;margin-top:10px;}
+    .shot{
+      border:1px dashed rgba(102,215,255,.24);
+      border-radius:16px;
+      padding:14px;
+      min-height:120px;
+      color:rgba(234,242,255,.62);
+      font-family:var(--mono);
+      font-size:12px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:rgba(102,215,255,.05);
+      position:relative;
+    }
+    .shot.isImage{
+      border-style:solid;
+      background:rgba(8,14,22,.35);
+      padding:6px;
+      cursor:pointer;
+      overflow:hidden;
+      appearance:none;
+      -webkit-appearance:none;
+    }
+    .shot.isImage img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      border-radius:12px;
+      display:block;
+    }
+    .shot.isImage:hover{border-color:rgba(102,215,255,.55)}
+    .shot.isImage:focus-visible{outline:2px solid rgba(102,215,255,.55);outline-offset:2px}
+    .shotHint{
+      position:absolute;
+      right:8px;
+      bottom:8px;
+      padding:4px 6px;
+      border-radius:999px;
+      border:1px solid var(--stroke);
+      background:rgba(8,14,22,.75);
+      color:var(--muted);
+      font-size:11px;
+      font-family:var(--mono);
+    }
+    .lightboxBack{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.72);display:none;align-items:center;justify-content:center;padding:18px;}
+    .lightboxBack.open{display:flex}
+    .lightbox{
+      width:min(1100px, 100%);
+      max-height:90vh;
+      border-radius:22px;
+      border:1px solid rgba(255,255,255,.12);
+      background:linear-gradient(180deg, rgba(8,14,22,.92), rgba(8,14,22,.82));
+      backdrop-filter: blur(10px);
+      box-shadow: 0 30px 80px rgba(0,0,0,.7);
+      padding:12px 12px 14px;
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .lightbox img{
+      width:100%;
+      height:auto;
+      max-height:calc(90vh - 140px);
+      object-fit:contain;
+      border-radius:16px;
+      background:rgba(0,0,0,.35);
+    }
+    .lightboxCaption{
+      color:var(--muted);
+      font-size:12px;
+      font-family:var(--mono);
+      text-align:center;
+      padding-bottom:6px;
+    }
+    .lightbox .closeBtn{position:absolute;top:12px;right:12px;}
+    .foot{margin-top:28px;padding-top:16px;border-top:1px solid var(--stroke);color:var(--muted);font-size:13px;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+    .foot a{color:rgba(234,242,255,.82)}
+  
+    /* Full-page 3D stage (fixed, behind UI) */
+    #stage3d{
+      position:fixed;
+      inset:0;
+      z-index:-1;
+      pointer-events:none;
+      opacity:1;
+    }
+    #stage3d canvas{width:100% !important;height:100% !important;display:block;}
+
+    /* Narrative sections */
+    .sectionFull{
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+    }
+    .overlayHero{
+      max-width:1100px;
+      margin:0 auto;
+      padding:600px 20px 30px;
+    }
+    .overlayHero .card{background:rgba(8,14,22,.42);}
+
+</style>
+
+  <!-- Scroll narrative -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+
+  <!-- Three.js ESM import map (required for GLTFLoader) -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/examples/jsm/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+</head>
+<body>
+  <canvas id="matrixCanvas"></canvas>
+  <div class="grain" aria-hidden="true"></div>
+  <div id="stage3d" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="topbar">
+      <div class="brand" title="Rudy Willoquet">
+        <div class="dot"></div>
+        <div style="min-width:0">
+          <b>Rudy Willoquet</b>
+          <span>Développeur IA / Logiciel — France</span>
+        </div>
+      </div>
+      <div class="btns">
+        <a class="btn primary" href="CV_Rudy_Willoquet.pdf" target="_blank" rel="noreferrer">Télécharger CV <span class="k">PDF</span></a>
+        <a class="btn" href="mailto:willoquetr@gmail.com">Contact <span class="k">email</span></a>
+        
+      </div>
+    </div>
+
+    
+    <section class="sectionFull" id="home">
+      <div class="overlayHero">
+        <div class="card heroMain" style="padding:26px">
+          <div class="tagline">AI‑assisted development • Architecture • Roadmaps • Code review • Tests</div>
+          <h1>Je construis des produits “IA appliquée” — avec une approche agentique et pragmatique.</h1>
+          <p class="lead">
+            Reconversion vers le développement IA. Mon point fort : concevoir l’architecture et piloter un développement assisté par IA
+            (Gemini/Codex) de manière contrôlée : découpage en modules, roadmap, revue de code, tests et validation incrémentale.
+          </p>
+          <div class="pillrow">
+            <span class="pill"><i></i> Python (apps, tooling, jeu)</span>
+            <span class="pill"><i></i> TypeScript / React (apps web)</span>
+            <span class="pill"><i></i> Desktop PySide6</span>
+            <span class="pill"><i></i> Agents outillés (LLM + tools)</span>
+            <span class="pill"><i></i> Local‑first (mémoire/persistance)</span>
+          </div>
+          
+        </div>
+      </div>
+    </section>
+
+    <div class="section" id="projects">
+      <div class="sectionHead">
+        <h2>Projets. Filtre par type. Clique sur une carte pour ouvrir la synthèse.</h2>
+      </div>
+
+      <div class="controls">
+        <input class="input" id="searchInput" placeholder="Rechercher (ex: agent, desktop, roguelike…)" />
+        <div class="chips" id="chips"></div>
+      </div>
+
+      <div class="grid" id="grid"></div>
+    </div>
+
+    <div class="section">
+      <div class="sectionHead">
+        <h2>Méthode (comment je travaille)</h2>
+        <p>Livraison en incréments : utile en alternance/entreprise, même en partant d’une base existante.</p>
+      </div>
+      <div class="card" style="padding:18px">
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+          <div class="mBlock">
+            <h4>1) Vision & roadmap</h4>
+            <p>Je définis l’objectif produit et les contraintes, puis je découpe en modules et étapes validables.</p>
+          </div>
+          <div class="mBlock">
+            <h4>2) Implémentation assistée</h4>
+            <p>J’encadre l’IA : petits lots, interdiction des refactors destructeurs, garde‑fous.</p>
+          </div>
+          <div class="mBlock">
+            <h4>3) Tests & validation</h4>
+            <p>Je teste chaque incrément, j’ajuste, je documente, puis je passe à l’étape suivante.</p>
+          </div>
+        </div>
+      </div>
+      <div class="foot">
+        <div>© <span id="year"></span> Rudy Willoquet</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <a href="mailto:willoquetr@gmail.com">willoquetr@gmail.com</a>
+          <span style="opacity:.5">•</span>
+          <span>Portfolio statique (GitHub Pages / Netlify)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modalBack" id="modalBack" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+      <div class="mHead">
+        <div>
+          <h3 id="mTitle">Projet</h3>
+          <div id="mMeta" style="margin-top:6px;color:var(--muted);font-family:var(--mono);font-size:12px"></div>
+        </div>
+        <button class="closeBtn" id="closeBtn">ESC • Fermer</button>
+      </div>
+      <div class="mBody">
+        <div class="mBlock">
+          <h4>Synthèse</h4>
+          <p id="mSummary"></p>
+          <ul class="bullets" id="mBullets"></ul>
+          <div class="shots" id="mShots"></div>
+        </div>
+        <div class="mBlock">
+          <h4>Stack & rôle</h4>
+          <p><b>Technos :</b> <span id="mStack"></span></p>
+          <p style="margin-top:10px"><b>Mon rôle :</b> <span id="mRole"></span></p>
+          <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap" id="mTags"></div>
+          <div style="margin-top:14px;border-top:1px solid var(--stroke);padding-top:12px;color:var(--muted);font-size:13px;line-height:1.6">
+            <span id="mPrivacy"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="lightboxBack" id="lightboxBack" aria-hidden="true">
+    <div class="lightbox" role="dialog" aria-modal="true" aria-label="Agrandir capture">
+      <button class="closeBtn" id="lightboxClose">ESC â€¢ Fermer</button>
+      <img id="lightboxImg" alt="" />
+      <div class="lightboxCaption" id="lightboxCaption"></div>
+    </div>
+  </div>
+
+  <script>
+    const PROJECTS = [
+      { id:"vera", name:"VERA — Virtual Emotional Reactive Assistant", type:["Agentic","Architecture","IA"], meta:"Architecture cognitive agentique • code privé",
+        summary:"1) Business : cadre pour assistants fiables (réduction des risques et meilleure conformité). 2) Simple : un assistant avec une boucle interne et des règles éthiques explicites. 3) Technique : architecture event‑driven modulaire, mémoire/états, règles de sécurité.",
+        bullets:["Système event‑driven : modules découplés, responsabilités claires.","Régulation ‘homéostatique’ : priorisation des buts selon l’état interne.","Garde‑fous éthiques : refus d’actions nuisibles, cohérence comportementale.","Local‑first : orientation ‘zéro cloud’ quand possible (selon contexte matériel)."],
+        stack:"(Doc) architecture agentique, design modulaire, event bus, mémoire/états",
+        role:"Vision produit, conception d’architecture, documentation. Développement conservé en privé (IP).",
+        tags:["Code privé","Documentation"], privacy:"🔒 Code source non publié (propriété intellectuelle). Documentation disponible.", screenshots:0, private:true
+      },
+      { id:"nexuscore", name:"NexusCore — Hub gamer desktop + télémétrie + assistant IA", type:["Desktop","IA","Data"], meta:"Desktop Windows • sessions + telemetry • agent outillé",
+        summary:"1) Business : réduction du temps de diagnostic et support pour les joueurs. 2) Simple : une appli PC qui suit les sessions et explique les problèmes de performance. 3) Technique : PySide6 + télémétrie + SQLAlchemy, agent IA outillé et contrôlé.",
+        bullets:["UI desktop (PySide6) pensée produit : navigation, écrans, états.","Collecte télémétrie + lissage (SMA) + historique de sessions.","Stockage (SQLAlchemy) pour corréler problèmes ↔ telemetry ↔ hardware ↔ jeu.","Agent IA avec outils (diagnostic, actions) + garde‑fous."],
+        stack:"Python • PySide6 • psutil • SQLAlchemy • Windows/WMI • PyInstaller • LLM via API",
+        role:"Architecture, découpage en modules, pilotage IA (roadmap), revue de code et tests incrémentaux.",
+        tags:["Desktop","Telemetry","Agent outillé"], privacy:"📌 Pas de téléchargement public (projet commercialisable). Démo/synthèse et screenshots.",
+        shots:["assets/projets/NexusCore/splashscreen.png","assets/projets/NexusCore/library.png","assets/projets/NexusCore/telemetry.png","assets/projets/NexusCore/config.png"],
+        screenshots:4, private:false
+      },
+      { id:"familyops", name:"FamilyOps — App familiale (React) + mémoire locale + Gemini", type:["Web","IA","Product"], meta:"Local‑first • planification • corvées/repas/courses",
+        summary:"1) Business : baisse de la charge mentale et meilleure organisation familiale. 2) Simple : une app web pour corvées, repas et courses avec suggestions IA. 3) Technique : React/TS, local‑first, persistance locale, IA via API.",
+        bullets:["Dashboard + modules : chores, meal plan, groceries, pets, routines.","Mémoire locale structurée (FamilyMemory), historique et préférences.","IA (Gemini API) pour suggestions contextualisées (avec confirmation).","Conception centrée ‘parents’ : simplicité, visibilité, régularité."],
+        stack:"TypeScript • React • Vite • local persistence • Gemini API",
+        role:"Vision produit, architecture front, données/mémoire, itération guidée avec tests.",
+        tags:["React","Local‑first","IA"], privacy:"📌 Pas de téléchargement public (projet commercialisable). Screenshots/vidéo.",
+        shots:["assets/projets/FamilyOps/tableaudebord.png","assets/projets/FamilyOps/tableaudebord1.png","assets/projets/FamilyOps/tableaudebord2.png","assets/projets/FamilyOps/tableaudebord3.png"],
+        screenshots:4, private:false
+      },
+      { id:"asg", name:"ASG — Autonomous System Guardian (agent sans IA)", type:["Tooling","Safety","Desktop"], meta:"Safety-by-design • règles explicables • event‑driven",
+        summary:"1) Business : prévention des incidents et réduction des risques opérationnels. 2) Simple : un agent qui bloque les actions dangereuses et explique pourquoi. 3) Technique : scoring de risque, gatekeeper d’actions, architecture event‑driven.",
+        bullets:["Monitoring contexte + évaluation du risque (scoring).","Gatekeeper d’actions : prévention plutôt que réparation.","Explications claires (pourquoi c’est risqué, quoi faire).","Architecture event‑driven, extensible par ‘advisors’."],
+        stack:"Python • architecture event-driven • sécurité logique (sans IA)",
+        role:"Conception système, implémentation assistée, tests, documentation.",
+        tags:["Safety","Agent","Tooling"], privacy:"📌 Pas de téléchargement public. Démo/synthèse + captures.", screenshots:4, private:false
+      },
+      { id:"inhell", name:"InHell — Roguelike Python/Pygame (assets générés)", type:["Game","Python","Procedural"], meta:"Procédural • pixel‑art généré • zéro asset externe",
+        summary:"1) Business : démonstration de capacité en dev jeu et génération procédurale. 2) Simple : un roguelike 2D dont tout est généré par code. 3) Technique : Python/Pygame, worldgen, système d’états, combat/inventaire.",
+        bullets:["Boucle de jeu, états, rendu pixel‑perfect.","Génération procédurale : rooms, worldgen, placement.","Systèmes : combat, inventaire, items, classes.","Spritegen : génération programmatique pixel‑art."],
+        stack:"Python • Pygame • procedural generation • packaging",
+        role:"Architecture + gameplay systems, itérations guidées, validation et stabilisation.",
+        tags:["Game","Procedural","Python"], privacy:"📌 Pas de téléchargement public. Screenshots/vidéo de gameplay.",
+        shots:["assets/projets/InHell/mainscreen.png","assets/projets/InHell/mapnmob.png","assets/projets/InHell/sanctuary.png","assets/projets/InHell/shop.png"],
+        screenshots:4, private:false
+      },
+      { id:"echo", name:"ECHO — PWA offline‑first + IA ‘rare’", type:["Web","PWA","IA"], meta:"Mobile-first • IndexedDB • embeddings worker",
+        summary:"1) Business : présence numérique légère, coût IA maîtrisé. 2) Simple : une PWA offline qui répond seulement quand c’est utile. 3) Technique : IndexedDB, service worker, embeddings en Web Worker, IA Mistral.",
+        bullets:["PWA installable (service worker, manifest).","Persistance IndexedDB : state/memory/vectors.","Worker d’embeddings pour isoler les calculs du thread UI.","IA via API (Mistral), gestion clé côté utilisateur."],
+        stack:"HTML/CSS/JS • PWA • IndexedDB • Web Workers • IA via API",
+        role:"Conception + implémentation, structuration stockage, tests navigateur.",
+        tags:["PWA","Offline-first","IA"], privacy:"📌 Pas de téléchargement public. Démo/synthèse + captures.",
+        shots:["assets/projets/ECHO/acceuil.png","assets/projets/ECHO/settings.png"],
+        screenshots:2, private:false
+      },
+      { id:"fluxpme", name:"FluxPME — Suite PME (desktop local)", type:["Product","Docs","PME"], meta:"Suite locale • emails • documents • Excel",
+        summary:"1) Business : répondre aux coûts cachés (≈5h/j email, ≈15 j cycle facture, ≈80% temps data prep) via automatisation locale. 2) Simple : une suite desktop qui gère emails, PDF et Excel sans cloud imposé. 3) Technique : PySide6 + backend local Flask + SQLite + ReportLab + IA Mistral/Ollama (optionnel).",
+        bullets:["Module e‑mail : classification, résumé et réponse assistée.","Génération PDF devis/factures avec champs légaux, export immédiat.","Analyse Excel : anomalies détectées + rapport PDF/CSV.","Dossier client local : historique, exports, rétention et journal d’audit."],
+        stack:"App desktop PySide6 • Backend local Flask • SQLite • ReportLab • IA Mistral/Ollama (optionnel)",
+        role:"Conception produit, architecture et implémentation end‑to‑end (desktop, backend local, stockage, exports).",
+        tags:["Product","Docs"], privacy:"📌 Pas de téléchargement public. Synthèse + extraits doc si besoin.",
+        shots:["assets/projets/FluxPME/analyzeremail.png","assets/projets/FluxPME/client.png","assets/projets/FluxPME/excel.png","assets/projets/FluxPME/pdf1.png","assets/projets/FluxPME/pdf2.png","assets/projets/FluxPME/profilentreprise.png","assets/projets/FluxPME/settings.png"],
+        screenshots:7, private:false
+      }
+    ];
+
+    const FILTERS = ["Tout","IA","Agentic","Desktop","Web","PWA","Game","Safety","Product","Data","Python","React","Docs","Tooling","Procedural","Architecture","PME"];
+    const state = { filter:"Tout", q:"" };
+
+    const grid = document.getElementById("grid");
+    const chips = document.getElementById("chips");
+    const searchInput = document.getElementById("searchInput");
+
+    FILTERS.forEach(f => {
+      const el = document.createElement("div");
+      el.className = "chip" + (f===state.filter ? " active":"");
+      el.textContent = f;
+      el.onclick = () => { state.filter = f; renderChips(); renderGrid(); };
+      chips.appendChild(el);
+    });
+
+    function renderChips(){ [...chips.children].forEach(ch => ch.classList.toggle("active", ch.textContent === state.filter)); }
+
+    function matches(p){
+      const q = state.q.trim().toLowerCase();
+      const hay = (p.name+" "+p.summary+" "+p.meta+" "+p.stack+" "+p.role+" "+p.type.join(" ")+" "+p.tags.join(" ")).toLowerCase();
+      const qok = !q || hay.includes(q);
+      const fok = state.filter === "Tout" || p.type.includes(state.filter) || p.tags.includes(state.filter) ||
+        p.stack.toLowerCase().includes(state.filter.toLowerCase()) || p.name.toLowerCase().includes(state.filter.toLowerCase());
+      return qok && fok;
+    }
+
+    function renderGrid(){
+      grid.innerHTML = "";
+      const items = PROJECTS.filter(matches);
+      items.forEach(p => {
+        const c = document.createElement("div");
+        c.className = "pCard";
+        c.onclick = () => openModal(p.id);
+        c.innerHTML = `
+          <div class="pTop">
+            <div style="min-width:0">
+              <h3 class="pTitle">${p.name}</h3>
+              <div class="pSub">${p.meta}</div>
+            </div>
+            <div class="badge">${p.private ? "🔒 privé":"📄 synthèse"}</div>
+          </div>
+          <div class="tags">
+            ${p.type.slice(0,3).map(t=>`<span class="tag">${t}</span>`).join("")}
+            ${p.private ? `<span class="tag private">Code privé</span>` : ""}
+            <span class="tag doc">Voir</span>
+          </div>`;
+        grid.appendChild(c);
+      });
+      if(items.length === 0){
+        const empty = document.createElement("div");
+        empty.className = "pCard";
+        empty.style.cursor = "default";
+        empty.innerHTML = `<h3 class="pTitle">Aucun résultat</h3><p class="pSub">Essaie un autre filtre ou une autre recherche.</p>`;
+        grid.appendChild(empty);
+      }
+    }
+
+    searchInput.addEventListener("input", (e) => { state.q = e.target.value; renderGrid(); });
+
+    const modalBack = document.getElementById("modalBack");
+    const closeBtn = document.getElementById("closeBtn");
+    const mTitle = document.getElementById("mTitle");
+    const mMeta = document.getElementById("mMeta");
+    const mSummary = document.getElementById("mSummary");
+    const mBullets = document.getElementById("mBullets");
+    const mStack = document.getElementById("mStack");
+    const mRole = document.getElementById("mRole");
+    const mTags = document.getElementById("mTags");
+    const mPrivacy = document.getElementById("mPrivacy");
+    const mShots = document.getElementById("mShots");
+    const lightboxBack = document.getElementById("lightboxBack");
+    const lightboxImg = document.getElementById("lightboxImg");
+    const lightboxCaption = document.getElementById("lightboxCaption");
+    const lightboxClose = document.getElementById("lightboxClose");
+
+    function formatShotLabel(path, index){
+      if(!path) return `Screenshot ${index + 1}`;
+      const file = path.split("/").pop() || "";
+      const name = file.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").trim();
+      return name || `Screenshot ${index + 1}`;
+    }
+
+    function normalizeShot(shot, index){
+      if(typeof shot === "string"){
+        return { src: shot, label: formatShotLabel(shot, index) };
+      }
+      if(shot && typeof shot === "object"){
+        const src = shot.src || "";
+        return { src, label: shot.label || formatShotLabel(src, index) };
+      }
+      return null;
+    }
+
+    function openLightbox(src, label){
+      if(!src) return;
+      lightboxImg.src = src;
+      lightboxImg.alt = label || "Capture projet";
+      lightboxCaption.textContent = label || "";
+      lightboxBack.classList.add("open");
+      lightboxBack.setAttribute("aria-hidden","false");
+    }
+
+    function closeLightbox(){
+      lightboxBack.classList.remove("open");
+      lightboxBack.setAttribute("aria-hidden","true");
+      lightboxImg.src = "";
+      lightboxImg.alt = "";
+      lightboxCaption.textContent = "";
+    }
+
+    function openModal(id){
+      const p = PROJECTS.find(x=>x.id===id);
+      if(!p) return;
+      mTitle.textContent = p.name;
+      mMeta.textContent = p.meta;
+      mSummary.textContent = p.summary;
+      mStack.textContent = p.stack;
+      mRole.textContent = p.role;
+
+      mBullets.innerHTML = "";
+      p.bullets.forEach(b => { const li = document.createElement("li"); li.textContent = b; mBullets.appendChild(li); });
+
+      mTags.innerHTML = "";
+      p.type.concat(p.tags).slice(0,8).forEach(t => { const s = document.createElement("span"); s.className = "tag" + (t.toLowerCase().includes("priv") ? " private" : ""); s.textContent = t; mTags.appendChild(s); });
+
+      mPrivacy.textContent = p.privacy;
+
+      mShots.innerHTML = "";
+      const shots = Array.isArray(p.shots) ? p.shots : [];
+      if(shots.length){
+        shots.forEach((shot, index) => {
+          const data = normalizeShot(shot, index);
+          if(!data || !data.src) return;
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "shot isImage";
+          btn.setAttribute("aria-label", `Agrandir ${p.name} - ${data.label}`);
+          const img = document.createElement("img");
+          img.src = data.src;
+          img.alt = `${p.name} - ${data.label}`;
+          btn.appendChild(img);
+          const hint = document.createElement("span");
+          hint.className = "shotHint";
+          hint.textContent = "Agrandir";
+          btn.appendChild(hint);
+          btn.addEventListener("click", () => openLightbox(data.src, `${p.name} — ${data.label}`));
+          mShots.appendChild(btn);
+        });
+      }else{
+        const n = Math.max(0, p.screenshots|0);
+        for(let i=1;i<=n;i++){
+          const d = document.createElement("div");
+          d.className = "shot";
+          d.textContent = `Screenshot ${i} (placeholder)`;
+          mShots.appendChild(d);
+        }
+        if(n===0){
+          const d = document.createElement("div");
+          d.className = "shot";
+          d.style.gridColumn = "1 / -1";
+          d.textContent = "Aucun screenshot (projet doc / non exécutable pour l’instant).";
+          mShots.appendChild(d);
+        }
+      }
+
+      modalBack.classList.add("open");
+      modalBack.setAttribute("aria-hidden","false");
+      document.body.classList.add("modal-open");
+    }
+    function closeModal(){
+      closeLightbox();
+      modalBack.classList.remove("open");
+      modalBack.setAttribute("aria-hidden","true");
+      document.body.classList.remove("modal-open");
+    }
+    closeBtn.onclick = closeModal;
+    modalBack.addEventListener("click", (e) => { if(e.target === modalBack) closeModal(); });
+    lightboxClose.onclick = closeLightbox;
+    lightboxBack.addEventListener("click", (e) => { if(e.target === lightboxBack) closeLightbox(); });
+    window.addEventListener("keydown", (e) => {
+      if(e.key !== "Escape") return;
+      if(lightboxBack.classList.contains("open")){
+        closeLightbox();
+        return;
+      }
+      closeModal();
+    });
+
+    const canvas = document.getElementById("matrixCanvas");
+    const ctx = canvas.getContext("2d");
+    var matrixTimer = null;
+    var drops = [];
+    const glyphs = "01ABCDEFGHIJKLMNOPQRSTUVWXYZ@#$%&*+-/<>[]{}()";
+    const fontSize = 16;
+
+    function resize(){
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      const cols = Math.floor(canvas.width / fontSize);
+      drops = new Array(cols).fill(1);
+      ctx.font = fontSize + "px ui-monospace";
+    }
+    window.addEventListener("resize", resize);
+    resize();
+
+    function tick(){
+      ctx.fillStyle = "rgba(7, 11, 16, 0.10)";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = "rgba(102,215,255,0.70)";
+      for(let i=0;i<drops.length;i++){
+        const text = glyphs.charAt(Math.floor(Math.random()*glyphs.length));
+        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i]=0;
+        drops[i]++;
+      }
+    }
+    function startMatrix(){ if(matrixTimer) return; matrixTimer = setInterval(tick, 40); }
+    function stopMatrix(){ if(typeof matrixTimer==="undefined" || !matrixTimer) return; clearInterval(matrixTimer); matrixTimer = null; ctx.clearRect(0,0,canvas.width,canvas.height); }
+
+    (function initStage3D(){
+      console.log("[3D] start");
+      // Three.js stage behind the UI: room + avatar + scroll narrative.
+      const stage = document.getElementById("stage3d");
+      if(!stage){
+        return;
+      }
+
+      if(location.protocol === "file:"){
+        console.warn("[3D] Serve via http://localhost:8000 (not file://) for GLB loading.");
+      }
+
+      fetch("assets/avatar.glb")
+        .then((res)=>{ console.log("[3D] avatar.glb fetch status", res.status, res.ok); })
+        .catch((err)=>{ console.warn("[3D] avatar.glb fetch failed", err); });
+
+      function webglAvailable(){
+        try{
+          const c = document.createElement("canvas");
+          return !!(window.WebGLRenderingContext && (c.getContext("webgl") || c.getContext("experimental-webgl")));
+        }catch(e){ return false; }
+      }
+      if(!webglAvailable()) return;
+
+      const start = (THREE, GLTFLoader, FBXLoader) => {
+      const scene = new THREE.Scene();
+      const DEBUG_CUBE = false;
+      const perfQuery = new URLSearchParams(window.location.search);
+      const forcedQuality = perfQuery.get("quality"); // "low" | "high"
+      const media = (q)=> window.matchMedia && window.matchMedia(q).matches;
+      const isTouch = media("(pointer: coarse)");
+      const smallScreen = media("(max-width: 900px)");
+      const prefersReducedMotion = media("(prefers-reduced-motion: reduce)");
+      const lowMemory = typeof navigator.deviceMemory === "number" && navigator.deviceMemory <= 4;
+      const lowCores = typeof navigator.hardwareConcurrency === "number" && navigator.hardwareConcurrency <= 4;
+      const lowSpecDefault = isTouch || smallScreen || prefersReducedMotion || lowMemory || lowCores;
+      const LOW_SPEC = forcedQuality === "low" ? true : forcedQuality === "high" ? false : lowSpecDefault;
+      document.body.dataset.quality = LOW_SPEC ? "low" : "high";
+      const ENABLE_SCROLL = false;
+      const ENABLE_INTERACTION = false;
+      const PROFILE_VIEW = true;
+      const USE_ROOM_GLB = true;
+      const ROOM_GLB_URL = "assets/gaming_bedroom.glb";
+      const AUTO_SCALE_ROOM = true;
+      const ROOM_TARGET_SIZE = 12.0;
+      const AUTO_CENTER_ROOM = true;
+      const AUTO_FRAME_ROOM = false;
+      const ROOM_SCALE = 1.0;
+      const ROOM_POS = { x: 0, y: -0.6, z: 1.0 };
+      const ROOM_ROT_Y = -Math.PI / 2;
+      const AVATAR_POS = { x: 0.05, y: 0.0, z: -0.35 };
+      const AVATAR_ROT_Y = Math.PI / 2 - Math.PI / 6;
+      const AVATAR_SCALE = 2.6;
+      const AUTO_SEAT_AVATAR = true;
+      const AVATAR_SEAT_OFFSET = { x: -0.2, y: -2.45, z: 0.20 };
+      const AUTO_FOCUS_ON_CHAIR = true;
+      const CHAIR_CAMERA_OFFSET = { x: 0.0, y: 1.0, z: 5.4 };
+      const CHAIR_CAMERA_YAW = -Math.PI / 36; // ~5° to the right
+      const ENABLE_SCREEN_CODE = true;
+      const CODE_TEX_SIZE = LOW_SPEC ? 256 : 512;
+      const CODE_UPDATE_EVERY = LOW_SPEC ? 3 : 1;
+      const SCREEN_GLOW_COLOR = 0x7affc8;
+      const SCREEN_EMISSIVE_INTENSITY = 1.2;
+      const SCREEN_LIGHT_INTENSITY = 1.4;
+      const SCREEN_LIGHT_DISTANCE = 6.0;
+      const SCREEN_TARGET_NAMES = [];
+      const LOG_SCREEN_MATERIALS = true;
+      const TV_TARGET_NAME = "tv_netflix_0";
+      const TV_PNG_COUNT = LOW_SPEC ? 12 : 32;
+      const TV_PNG_PAD = 2; // 01, 02, ... 32
+      const TV_PNG_DIR = "assets/tvpng";
+      const TV_CHANGE_MS = LOW_SPEC ? 12000 : 7000;
+      const TV_HISTORY = 5;
+      const TV_IMAGE_SCALE = 0.5;
+      const TV_CANVAS_SIZE = LOW_SPEC ? 512 : 1024;
+      const ENABLE_MOON_BG = true;
+      const MOON_BG_PATH = "assets/lune.png";
+      const MOON_BG_PATH_2 = "assets/lune2.png";
+      const MOON_BG_OVERLAP_RATIO = 0.2; // 1/5 overlap
+      const MOON_BG_2_RAISE = 0.35; // raise lune2 by 35% of its height
+      const MOON_BG_2_FADE = 0.35; // top fade ratio for lune2
+      const MOON_BG_SCALE = 2.6;
+      const MOON_BG_DISTANCE = 3.2;
+      const MOON_BG_OFFSET = { x: 3.4, y: 0.0, z: 0.0 };
+      const DESK_CAMERA_OFFSET = { side: 5.5, up: 1.4, forward: -2.4 };
+      const ANIM_FALLBACK_FBX_URL = "assets/Typing.fbx";
+      const clock = new THREE.Clock();
+
+      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 200);
+      const target = new THREE.Vector3(0, 1.2, 0);
+      const setTarget = (v)=>{ target.copy(v); camera.lookAt(target); };
+      if(PROFILE_VIEW){
+        camera.position.set(2.4, 1.45, -0.35);
+      }else{
+        camera.position.set(0.2, 1.55, 3.2);
+      }
+      camera.lookAt(target);
+
+      const renderer = new THREE.WebGLRenderer({ antialias:!LOW_SPEC, alpha:true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, LOW_SPEC ? 1 : 2));
+      renderer.setClearColor(0x000000, 0);
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.toneMapping = THREE.ACESFilmicToneMapping;
+      renderer.toneMappingExposure = 1.05;
+      stage.appendChild(renderer.domElement);
+
+      // Lights (arctic)
+      scene.add(new THREE.HemisphereLight(0xa7f0ff, 0x0b1220, 1.15));
+      const key = new THREE.DirectionalLight(0x66d7ff, 1.25); key.position.set(2, 3, 2); scene.add(key);
+      const rim = new THREE.DirectionalLight(0xa7f0ff, 0.75); rim.position.set(-2, 2, -2); scene.add(rim);
+
+      // Debug cube to confirm renderer is alive
+      let debugCube = null;
+      if(DEBUG_CUBE){
+        debugCube = new THREE.Mesh(
+          new THREE.BoxGeometry(0.25, 0.25, 0.25),
+          new THREE.MeshBasicMaterial({ color: 0xff5aa5 })
+        );
+        debugCube.position.set(0, 1.1, 0);
+        scene.add(debugCube);
+      }
+
+      // Room (simple primitives) — modular (replace with a real GLB later)
+      const room = new THREE.Group();
+      scene.add(room);
+
+      let codeCanvas = null;
+      let cctx = null;
+      let tex = null;
+      let chairTarget = null;
+      let roomBounds = null;
+      let tvMesh = null;
+      let tvTextures = [];
+      let tvTimer = null;
+      let tvHistory = [];
+      let textureLoader = null;
+      let tvPaths = [];
+      let moonBg = null;
+      let moonBg2 = null;
+      let moonFadeTex = null;
+
+      function initCodeTexture(){
+        if(codeCanvas || !ENABLE_SCREEN_CODE) return;
+        codeCanvas = document.createElement("canvas");
+        codeCanvas.width = CODE_TEX_SIZE; codeCanvas.height = CODE_TEX_SIZE;
+        cctx = codeCanvas.getContext("2d");
+        tex = new THREE.CanvasTexture(codeCanvas);
+        tex.minFilter = THREE.LinearFilter;
+        tex.magFilter = THREE.LinearFilter;
+        tex.colorSpace = THREE.SRGBColorSpace;
+      }
+
+      function initTextureLoader(){
+        if(!textureLoader){
+          textureLoader = new THREE.TextureLoader();
+        }
+      }
+
+      function buildTVPaths(){
+        const paths = [];
+        for(let i=1;i<=TV_PNG_COUNT;i++){
+          const num = String(i).padStart(TV_PNG_PAD, "0");
+          paths.push(`${TV_PNG_DIR}/${num}.png`);
+        }
+        return paths;
+      }
+
+      function loadTVTextures(){
+        tvPaths = buildTVPaths();
+        if(!tvPaths.length) return;
+        initTextureLoader();
+        const loads = tvPaths.map((url)=> new Promise((resolve)=>{
+          textureLoader.load(
+            url,
+            (t)=>{
+              t.colorSpace = THREE.SRGBColorSpace;
+              const scaled = scaleTextureToCanvas(t, TV_IMAGE_SCALE);
+              resolve({ url, tex: scaled || t });
+            },
+            undefined,
+            (err)=>{
+              console.warn("[3D] TV texture load failed", url, err);
+              resolve(null);
+            }
+          );
+        }));
+        Promise.all(loads).then((items)=>{
+          tvTextures = items.filter(Boolean);
+          if(!tvTextures.length){
+            console.warn("[3D] No TV textures loaded.");
+          }
+          startTVRotation();
+        });
+      }
+
+      function applyTVTexture(t){
+        if(!tvMesh || !t) return;
+        const applyMat = (m)=>{
+          if(!m) return;
+          m.map = t;
+          m.emissive = new THREE.Color(0xffffff);
+          m.emissiveMap = t;
+          m.emissiveIntensity = 0.8;
+          m.needsUpdate = true;
+        };
+        if(Array.isArray(tvMesh.material)){
+          tvMesh.material.forEach(applyMat);
+        }else{
+          applyMat(tvMesh.material);
+        }
+      }
+
+      function scaleTextureToCanvas(t, scale){
+        if(!t || !t.image) return null;
+        const img = t.image;
+        const canvas = document.createElement("canvas");
+        canvas.width = TV_CANVAS_SIZE;
+        canvas.height = TV_CANVAS_SIZE;
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#000";
+        ctx.fillRect(0,0,canvas.width, canvas.height);
+        const maxW = canvas.width * scale;
+        const maxH = canvas.height * scale;
+        const aspect = img.width / img.height;
+        let drawW = maxW;
+        let drawH = drawW / aspect;
+        if(drawH > maxH){
+          drawH = maxH;
+          drawW = drawH * aspect;
+        }
+        const x = (canvas.width - drawW) * 0.5;
+        const y = (canvas.height - drawH) * 0.5;
+        ctx.drawImage(img, x, y, drawW, drawH);
+        const out = new THREE.CanvasTexture(canvas);
+        out.colorSpace = THREE.SRGBColorSpace;
+        return out;
+      }
+
+      function pickNextTVIndex(){
+        const n = tvTextures.length;
+        if(n === 0) return -1;
+        if(n === 1) return 0;
+        const recent = new Set(tvHistory);
+        let candidates = [];
+        for(let i=0;i<n;i++){
+          if(!recent.has(i)) candidates.push(i);
+        }
+        if(candidates.length === 0){
+          tvHistory = tvHistory.slice(-1);
+          for(let i=0;i<n;i++){
+            if(!tvHistory.includes(i)) candidates.push(i);
+          }
+        }
+        const idx = candidates[Math.floor(Math.random() * candidates.length)];
+        tvHistory.push(idx);
+        if(tvHistory.length > TV_HISTORY) tvHistory.shift();
+        return idx;
+      }
+
+      function startTVRotation(){
+        if(!tvMesh || !tvTextures.length || tvTimer) return;
+        const first = pickNextTVIndex();
+        if(first >= 0) applyTVTexture(tvTextures[first].tex);
+        tvTimer = setInterval(()=>{
+          const next = pickNextTVIndex();
+          if(next >= 0) applyTVTexture(tvTextures[next].tex);
+        }, TV_CHANGE_MS);
+      }
+
+      function addMoonBackdrop(bounds){
+        if(!ENABLE_MOON_BG || moonBg || !bounds) return;
+        initTextureLoader();
+        textureLoader.load(
+          MOON_BG_PATH,
+          (t)=>{
+            t.colorSpace = THREE.SRGBColorSpace;
+            const w = bounds.size.x * MOON_BG_SCALE;
+            const h = bounds.size.y * MOON_BG_SCALE * 0.7;
+            const geom = new THREE.PlaneGeometry(w, h);
+            const mat = new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: 0.95 });
+            mat.depthWrite = false;
+            moonBg = new THREE.Mesh(geom, mat);
+            const dir = new THREE.Vector3().subVectors(bounds.center, camera.position).normalize();
+            const dist = Math.max(bounds.size.z, bounds.size.x) * MOON_BG_DISTANCE;
+            moonBg.position.copy(bounds.center).add(dir.multiplyScalar(dist));
+            moonBg.position.add(new THREE.Vector3(MOON_BG_OFFSET.x, MOON_BG_OFFSET.y, MOON_BG_OFFSET.z));
+            moonBg.lookAt(camera.position);
+            moonBg.renderOrder = -1;
+            room.add(moonBg);
+            console.log("[3D] moon backdrop added");
+
+            if(MOON_BG_PATH_2 && !moonBg2){
+              textureLoader.load(
+                MOON_BG_PATH_2,
+                (t2)=>{
+                  t2.colorSpace = THREE.SRGBColorSpace;
+                  const geom2 = new THREE.PlaneGeometry(w, h);
+                  const mat2 = new THREE.MeshBasicMaterial({ map: t2, transparent: true, opacity: 0.95 });
+                  mat2.depthWrite = false;
+                  if(!moonFadeTex){
+                    const canvas = document.createElement("canvas");
+                    canvas.width = 2;
+                    canvas.height = 512;
+                    const gctx = canvas.getContext("2d");
+                    const grad = gctx.createLinearGradient(0, 0, 0, canvas.height);
+                    grad.addColorStop(0, "rgba(255,255,255,0)");
+                    grad.addColorStop(Math.min(1, Math.max(0.02, MOON_BG_2_FADE)), "rgba(255,255,255,1)");
+                    grad.addColorStop(1, "rgba(255,255,255,1)");
+                    gctx.fillStyle = grad;
+                    gctx.fillRect(0, 0, canvas.width, canvas.height);
+                    moonFadeTex = new THREE.CanvasTexture(canvas);
+                    moonFadeTex.wrapS = THREE.ClampToEdgeWrapping;
+                    moonFadeTex.wrapT = THREE.ClampToEdgeWrapping;
+                  }
+                  mat2.alphaMap = moonFadeTex;
+                  moonBg2 = new THREE.Mesh(geom2, mat2);
+                  const overlap = h * MOON_BG_OVERLAP_RATIO;
+                  const raise = h * MOON_BG_2_RAISE;
+                  moonBg2.position.copy(moonBg.position).add(new THREE.Vector3(0, -(h - overlap) + raise, 0));
+                  moonBg2.lookAt(camera.position);
+                  moonBg2.renderOrder = moonBg.renderOrder + 0.1; // draw above lune.png
+                  room.add(moonBg2);
+                  console.log("[3D] moon backdrop (2) added");
+                },
+                undefined,
+                (err)=>{
+                  console.warn("[3D] moon backdrop (2) load failed", err);
+                }
+              );
+            }
+          },
+          undefined,
+          (err)=>{
+            console.warn("[3D] moon backdrop load failed", err);
+          }
+        );
+      }
+
+      function trySeatAvatar(){
+        if(!AUTO_SEAT_AVATAR || !avatar || !chairTarget) return;
+        const box = chairTarget.box;
+        const center = chairTarget.center;
+        const seatY = box.min.y + (box.max.y - box.min.y) * 0.45;
+        avatar.position.set(
+          center.x + AVATAR_SEAT_OFFSET.x,
+          seatY + AVATAR_SEAT_OFFSET.y,
+          center.z + AVATAR_SEAT_OFFSET.z
+        );
+        avatar.rotation.y = AVATAR_ROT_Y;
+        console.log("[3D] avatar seated at", avatar.position);
+      }
+
+      function focusCameraOnDesk(deskBox){
+        if(!deskBox) return;
+        const center = new THREE.Vector3();
+        deskBox.getCenter(center);
+        const targetY = center.y + 0.35;
+        if(PROFILE_VIEW){
+          camera.position.set(center.x + DESK_CAMERA_OFFSET.side, center.y + DESK_CAMERA_OFFSET.up, center.z + DESK_CAMERA_OFFSET.forward);
+        }else{
+          camera.position.set(center.x, center.y + DESK_CAMERA_OFFSET.up, center.z + DESK_CAMERA_OFFSET.side);
+        }
+        setTarget(new THREE.Vector3(center.x, targetY, center.z));
+      }
+
+      function focusCameraOnChair(chairBox){
+        if(!chairBox) return;
+        const center = new THREE.Vector3();
+        chairBox.getCenter(center);
+        const offset = new THREE.Vector3(CHAIR_CAMERA_OFFSET.x, CHAIR_CAMERA_OFFSET.y, CHAIR_CAMERA_OFFSET.z);
+        if(CHAIR_CAMERA_YAW){
+          offset.applyAxisAngle(new THREE.Vector3(0,1,0), CHAIR_CAMERA_YAW);
+        }
+        camera.position.copy(center).add(offset);
+        setTarget(new THREE.Vector3(center.x, center.y + 0.9, center.z));
+      }
+
+      if(USE_ROOM_GLB){
+        initCodeTexture();
+        loadTVTextures();
+        fetch(ROOM_GLB_URL)
+          .then((res)=>{ console.log("[3D] room fetch status", res.status, res.ok); })
+          .catch((err)=>{ console.warn("[3D] room fetch failed", err); });
+        const roomLoader = new GLTFLoader();
+        roomLoader.load(
+          ROOM_GLB_URL,
+          (gltf) => {
+            console.log("[3D] room loaded", gltf);
+            const model = gltf.scene;
+            model.position.set(ROOM_POS.x, ROOM_POS.y, ROOM_POS.z);
+            model.rotation.y = ROOM_ROT_Y;
+            model.scale.set(ROOM_SCALE, ROOM_SCALE, ROOM_SCALE);
+            if(AUTO_SCALE_ROOM){
+              model.updateMatrixWorld(true);
+              const box0 = new THREE.Box3().setFromObject(model);
+              const size0 = new THREE.Vector3();
+              box0.getSize(size0);
+              const maxDim = Math.max(size0.x, size0.y, size0.z);
+              if(maxDim > 0){
+                const s = ROOM_TARGET_SIZE / maxDim;
+                model.scale.multiplyScalar(s);
+              }
+            }
+            model.updateMatrixWorld(true);
+            let box = new THREE.Box3().setFromObject(model);
+            let size = new THREE.Vector3();
+            let center = new THREE.Vector3();
+            box.getSize(size);
+            box.getCenter(center);
+            if(AUTO_CENTER_ROOM){
+              model.position.sub(center);
+              model.updateMatrixWorld(true);
+              box = new THREE.Box3().setFromObject(model);
+              size = new THREE.Vector3();
+              center = new THREE.Vector3();
+              box.getSize(size);
+              box.getCenter(center);
+            }
+            roomBounds = { box, size, center };
+            room.add(model);
+            if(AUTO_FRAME_ROOM && roomBounds){
+              const c = roomBounds.center;
+              const maxDim = Math.max(roomBounds.size.x, roomBounds.size.y, roomBounds.size.z);
+              const dist = maxDim / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov * 0.5)));
+              if(PROFILE_VIEW){
+                camera.position.set(c.x + dist * 1.2, c.y + roomBounds.size.y * 0.35, c.z);
+              }else{
+                camera.position.set(c.x, c.y + roomBounds.size.y * 0.35, c.z + dist * 1.2);
+              }
+              setTarget(new THREE.Vector3(c.x, c.y + roomBounds.size.y * 0.35, c.z));
+              camera.near = Math.max(0.05, dist * 0.01);
+              camera.far = dist * 6 + maxDim * 2;
+              camera.updateProjectionMatrix();
+            }
+            addMoonBackdrop(roomBounds);
+
+            // Apply code texture to screen/monitor meshes if found
+            if(ENABLE_SCREEN_CODE && tex){
+              let screenCenter = null;
+              const screenHints = [/pantalla/i, /screen/i, /monitor/i];
+              const screenTargets = new Set(SCREEN_TARGET_NAMES.map((n)=>n.toLowerCase()));
+              if(LOG_SCREEN_MATERIALS){
+                const screenReport = [];
+                model.traverse((o)=>{
+                  if(!(o.isMesh || o.isSkinnedMesh)) return;
+                  const name = (o.name || "").toLowerCase();
+                  if(!screenHints.some((r)=>r.test(name))) return;
+                  const mats = Array.isArray(o.material) ? o.material : [o.material];
+                  const matInfo = mats.map((m)=>{
+                    const map = m && m.map ? m.map.image : null;
+                    const src = map && map.currentSrc ? map.currentSrc : (map && map.src ? map.src : (map && map.uri ? map.uri : ""));
+                    return { mat: m ? m.name : "", hasMap: !!m?.map, src };
+                  });
+                  screenReport.push({ mesh: o.name || o.uuid, materials: matInfo });
+                });
+                if(screenReport.length){
+                  console.log("[3D] screen material report", screenReport);
+                }
+              }
+              model.traverse((o)=>{
+                if(!(o.isMesh || o.isSkinnedMesh)) return;
+                const name = (o.name || "").toLowerCase();
+                if(!screenHints.some((r)=>r.test(name))) return;
+                if(screenTargets.size && !screenTargets.has(name)) return;
+                const mats = Array.isArray(o.material) ? o.material : [o.material];
+                const hasMap = mats.some((m)=>m && m.map && m.map.image);
+                if(!screenTargets.size && !hasMap) return;
+                const applyMat = (m)=>{
+                  if(!m) return;
+                  m.map = tex;
+                  m.emissive = new THREE.Color(SCREEN_GLOW_COLOR);
+                  m.emissiveMap = tex;
+                  m.emissiveIntensity = SCREEN_EMISSIVE_INTENSITY;
+                  m.needsUpdate = true;
+                };
+                if(Array.isArray(o.material)){
+                  o.material.forEach(applyMat);
+                }else{
+                  applyMat(o.material);
+                }
+                if(!screenCenter){
+                  const sbox = new THREE.Box3().setFromObject(o);
+                  const scenter = new THREE.Vector3();
+                  sbox.getCenter(scenter);
+                  screenCenter = scenter;
+                }
+              });
+              if(screenCenter){
+                const light = new THREE.PointLight(SCREEN_GLOW_COLOR, SCREEN_LIGHT_INTENSITY, SCREEN_LIGHT_DISTANCE, 2);
+                light.position.copy(screenCenter).add(new THREE.Vector3(0, 0.2, 0.15));
+                room.add(light);
+                console.log("[3D] screen light added", screenCenter);
+              }else{
+                console.warn("[3D] screen mesh not found (by name).");
+              }
+            }
+            // TV mesh (for PNG rotation)
+            model.traverse((o)=>{
+              if(tvMesh) return;
+              if(!(o.isMesh || o.isSkinnedMesh)) return;
+              const name = (o.name || "").toLowerCase();
+              if(TV_TARGET_NAME && name === TV_TARGET_NAME.toLowerCase()){
+                tvMesh = o;
+              }else if(!TV_TARGET_NAME && /tv/i.test(name)){
+                tvMesh = o;
+              }
+            });
+            if(tvMesh){
+              console.log("[3D] TV mesh found", tvMesh.name || tvMesh.uuid);
+              startTVRotation();
+            }else{
+              console.warn("[3D] TV mesh not found. Set TV_TARGET_NAME if needed.");
+            }
+            const hints = [/chair/i, /seat/i, /stool/i, /gaming/i];
+            let found = null;
+            model.traverse((o)=>{
+              if(found) return;
+              const name = (o.name || "").toLowerCase();
+              if((o.isMesh || o.isSkinnedMesh) && (hints.some((r)=>r.test(name)) || /silla/i.test(name))){
+                found = o;
+              }
+            });
+            if(found){
+              model.updateMatrixWorld(true);
+              const cbox = new THREE.Box3().setFromObject(found);
+              const ccenter = new THREE.Vector3();
+              cbox.getCenter(ccenter);
+              chairTarget = { object: found, box: cbox, center: ccenter };
+              console.log("[3D] chair candidate", found.name || found.uuid);
+              console.log("[3D] chair bbox", chairTarget.box);
+              if(AUTO_FOCUS_ON_CHAIR){
+                focusCameraOnChair(chairTarget.box);
+              }
+              trySeatAvatar();
+            }else{
+              console.warn("[3D] chair mesh not found (by name).");
+              const names = [];
+              model.traverse((o)=>{
+                if((o.isMesh || o.isSkinnedMesh) && o.name){
+                  if(names.length < 60) names.push(o.name);
+                }
+              });
+              if(names.length){
+                console.log("[3D] mesh names sample", names);
+              }
+            }
+
+            // Focus camera on desk if possible
+            let deskMesh = null;
+            const deskHints = [/escritorio/i, /desk/i, /table/i];
+            model.traverse((o)=>{
+              if(deskMesh) return;
+              const name = (o.name || "").toLowerCase();
+              if((o.isMesh || o.isSkinnedMesh) && deskHints.some((r)=>r.test(name))){
+                deskMesh = o;
+              }
+            });
+            if(deskMesh && !AUTO_FOCUS_ON_CHAIR){
+              const dbox = new THREE.Box3().setFromObject(deskMesh);
+              console.log("[3D] desk candidate", deskMesh.name || deskMesh.uuid);
+              console.log("[3D] desk bbox", dbox);
+              focusCameraOnDesk(dbox);
+            }else{
+              console.warn("[3D] desk mesh not found (by name).");
+            }
+          },
+          undefined,
+          (err) => {
+            console.error("[3D] room load error", err);
+          }
+        );
+      }else{
+
+      const wallMat = new THREE.MeshStandardMaterial({ color: 0x141a22, roughness: 0.92, metalness: 0.04 });
+      const floorMat = new THREE.MeshStandardMaterial({ color: 0x0f1318, roughness: 0.98, metalness: 0.02 });
+      const neonMat = new THREE.MeshBasicMaterial({ color: 0x66d7ff, transparent:true, opacity:0.12 });
+
+      const floor = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), floorMat);
+      floor.rotation.x = -Math.PI/2; floor.position.y = 0;
+      room.add(floor);
+
+      const backWall = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMat);
+      backWall.position.set(0, 2.5, -3.2);
+      room.add(backWall);
+
+      const side = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMat);
+      side.rotation.y = Math.PI/2; side.position.set(-4.2, 2.5, 1.0);
+      room.add(side);
+
+      const side2 = new THREE.Mesh(new THREE.PlaneGeometry(10, 5), wallMat);
+      side2.rotation.y = -Math.PI/2; side2.position.set(4.2, 2.5, 1.0);
+      room.add(side2);
+
+      const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), wallMat);
+      ceiling.rotation.x = Math.PI/2; ceiling.position.set(0, 5.0, 1.0);
+      room.add(ceiling);
+
+      const rug = new THREE.Mesh(
+        new THREE.PlaneGeometry(3.2, 2.0),
+        new THREE.MeshStandardMaterial({ color:0x1a1f2a, roughness:0.95, metalness:0.02 })
+      );
+      rug.rotation.x = -Math.PI/2;
+      rug.position.set(0.2, 0.01, -0.3);
+      room.add(rug);
+
+      const windowFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(1.4, 0.9, 0.04),
+        new THREE.MeshStandardMaterial({ color:0x11161d, roughness:0.6, metalness:0.2 })
+      );
+      windowFrame.position.set(-2.2, 2.2, -2.9);
+      room.add(windowFrame);
+      const windowGlass = new THREE.Mesh(
+        new THREE.PlaneGeometry(1.25, 0.75),
+        new THREE.MeshBasicMaterial({ color:0x2f6ea3, transparent:true, opacity:0.6 })
+      );
+      windowGlass.position.set(-2.2, 2.2, -2.88);
+      room.add(windowGlass);
+
+      // Desk
+      const desk = new THREE.Group();
+      desk.position.set(0.15, 0.72, -0.55);
+      const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.06, 0.8), new THREE.MeshStandardMaterial({ color:0x2a2018, roughness:0.6, metalness:0.05 }));
+      const legMat = new THREE.MeshStandardMaterial({ color:0x0c1118, roughness:0.8, metalness:0.08 });
+      const leg1 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.7, 0.06), legMat); leg1.position.set(-0.72, -0.38, -0.34);
+      const leg2 = leg1.clone(); leg2.position.set(0.72, -0.38, -0.34);
+      const leg3 = leg1.clone(); leg3.position.set(-0.72, -0.38, 0.34);
+      const leg4 = leg1.clone(); leg4.position.set(0.72, -0.38, 0.34);
+      desk.add(deskTop, leg1, leg2, leg3, leg4);
+      room.add(desk);
+
+      // Monitor with scrolling code texture
+      initCodeTexture();
+      const screenMat = new THREE.MeshBasicMaterial({ map: tex });
+      const screen = new THREE.Mesh(new THREE.PlaneGeometry(0.60, 0.36), screenMat);
+      screen.position.set(0.0, 0.26, -0.30);
+      screen.rotation.y = 0.10;
+      desk.add(screen);
+
+      const bezelMat = new THREE.MeshStandardMaterial({ color:0x0b0f16, roughness:0.5, metalness:0.2 });
+      const bezel = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.42, 0.02), bezelMat);
+      bezel.position.copy(screen.position);
+      bezel.position.z -= 0.01;
+      bezel.rotation.copy(screen.rotation);
+      desk.add(bezel);
+
+      const panel = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.38, 0.008), new THREE.MeshStandardMaterial({ color:0x121722, roughness:0.4, metalness:0.2 }));
+      panel.position.copy(screen.position);
+      panel.position.z -= 0.018;
+      panel.rotation.copy(screen.rotation);
+      desk.add(panel);
+
+      const standNeck = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.03, 0.18, 16), new THREE.MeshStandardMaterial({ color:0x0c1016, roughness:0.5, metalness:0.3 }));
+      standNeck.position.set(0.0, 0.12, -0.34);
+      desk.add(standNeck);
+
+      const standBase = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.02, 0.16), new THREE.MeshStandardMaterial({ color:0x0c1016, roughness:0.5, metalness:0.25 }));
+      standBase.position.set(0.0, 0.03, -0.34);
+      desk.add(standBase);
+
+      // Neon strip
+      const neon = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.01, 0.02), neonMat);
+      neon.position.set(0, 0.40, -0.45);
+      desk.add(neon);
+
+      // Chair (simple but supportive)
+      const chair = new THREE.Group();
+      chair.position.set(0.05, 0.0, -0.15);
+      const chairMat = new THREE.MeshStandardMaterial({ color:0x141922, roughness:0.7, metalness:0.08 });
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.06, 0.5), chairMat);
+      seat.position.set(0.0, 0.48, -0.05);
+      chair.add(seat);
+      const chairBack = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.55, 0.06), chairMat);
+      chairBack.position.set(0.0, 0.75, -0.28);
+      chair.add(chairBack);
+      const legMat2 = new THREE.MeshStandardMaterial({ color:0x0c1016, roughness:0.6, metalness:0.2 });
+      const legGeom = new THREE.CylinderGeometry(0.03, 0.03, 0.45, 12);
+      const legA = new THREE.Mesh(legGeom, legMat2); legA.position.set(-0.23, 0.23, 0.13);
+      const legB = legA.clone(); legB.position.set(0.23, 0.23, 0.13);
+      const legC = legA.clone(); legC.position.set(-0.23, 0.23, -0.23);
+      const legD = legA.clone(); legD.position.set(0.23, 0.23, -0.23);
+      chair.add(legA, legB, legC, legD);
+      room.add(chair);
+
+      // Desk mat + keyboard + mouse (simple geometry textures)
+      const mat = new THREE.Mesh(
+        new THREE.PlaneGeometry(0.9, 0.45),
+        new THREE.MeshStandardMaterial({ color:0x1a1f2a, roughness:0.9, metalness:0.02 })
+      );
+      mat.rotation.x = -Math.PI/2;
+      mat.position.set(0.05, 0.035, -0.05);
+      desk.add(mat);
+
+      const keyboard = new THREE.Group();
+      keyboard.position.set(0.05, 0.055, -0.05);
+      keyboard.rotation.x = -0.06;
+      const kbBase = new THREE.Mesh(
+        new THREE.BoxGeometry(0.54, 0.02, 0.18),
+        new THREE.MeshStandardMaterial({ color:0x121722, roughness:0.65, metalness:0.1 })
+      );
+      kbBase.position.y = 0.01;
+      keyboard.add(kbBase);
+      const keyMat = new THREE.MeshStandardMaterial({ color:0x262b38, roughness:0.7, metalness:0.04 });
+      for(let r=0;r<4;r++){
+        for(let c=0;c<10;c++){
+          const key = new THREE.Mesh(new THREE.BoxGeometry(0.042, 0.008, 0.032), keyMat);
+          key.position.set(-0.215 + c*0.048, 0.018, -0.065 + r*0.04);
+          keyboard.add(key);
+        }
+      }
+      desk.add(keyboard);
+
+      const mouse = new THREE.Group();
+      mouse.position.set(0.38, 0.045, -0.02);
+      const mouseBody = new THREE.Mesh(
+        new THREE.SphereGeometry(0.06, 18, 18),
+        new THREE.MeshStandardMaterial({ color:0x10151f, roughness:0.45, metalness:0.12 })
+      );
+      mouseBody.scale.set(0.75, 0.45, 1.0);
+      mouse.add(mouseBody);
+      const mouseBtn = new THREE.Mesh(
+        new THREE.BoxGeometry(0.03, 0.01, 0.04),
+        new THREE.MeshStandardMaterial({ color:0x1b212d, roughness:0.5, metalness:0.08 })
+      );
+      mouseBtn.position.set(0.0, 0.02, 0.02);
+      mouse.add(mouseBtn);
+      desk.add(mouse);
+      }
+
+      // Avatar
+      let avatar = null;
+      let mixer = null;
+      const playClip = (clip, label) => {
+        mixer = new THREE.AnimationMixer(avatar);
+        mixer.clipAction(clip).play();
+        console.log("[3D] playing animation", label || clip.name || "clip");
+      };
+      const loader = new GLTFLoader();
+      loader.load(
+        "assets/avatar.glb",
+        (gltf) => {
+          console.log("[3D] avatar loaded", gltf);
+          console.log("[3D] animations", gltf.animations);
+          avatar = gltf.scene;
+          avatar.position.set(AVATAR_POS.x, AVATAR_POS.y, AVATAR_POS.z);
+          avatar.rotation.y = AVATAR_ROT_Y; // adjust to face desk
+          avatar.scale.set(AVATAR_SCALE, AVATAR_SCALE, AVATAR_SCALE);
+          room.add(avatar);
+          trySeatAvatar();
+          if(gltf.animations && gltf.animations.length){
+            playClip(gltf.animations[0], "avatar.glb");
+          }else{
+            console.warn("[3D] no animations found in avatar.glb");
+            fetch(ANIM_FALLBACK_FBX_URL)
+              .then((res)=>{ console.log("[3D] Typing.fbx fetch status", res.status, res.ok); })
+              .catch((err)=>{ console.warn("[3D] Typing.fbx fetch failed", err); });
+            const fbxLoader = new FBXLoader();
+            fbxLoader.load(
+              ANIM_FALLBACK_FBX_URL,
+              (fbx) => {
+                console.log("[3D] Typing.fbx loaded", fbx);
+                console.log("[3D] Typing.fbx animations", fbx.animations);
+                if(fbx.animations && fbx.animations.length){
+                  playClip(fbx.animations[0], "Typing.fbx");
+                }else{
+                  console.warn("[3D] no animations found in Typing.fbx");
+                }
+              },
+              undefined,
+              (err) => {
+                console.error("[3D] Typing.fbx load error", err);
+              }
+            );
+          }
+        },
+        undefined,
+        (err) => {
+          console.error("[3D] avatar load error", err);
+        }
+      );
+
+      // Procedural posing helpers (optional bones)
+      function findBone(regexList){
+        if(!avatar) return null;
+        let found = null;
+        avatar.traverse((o)=>{
+          if(found) return;
+          if(o.isBone || o.type === "Bone"){
+            const name = (o.name||"").toLowerCase();
+            if(regexList.some(r=>r.test(name))) found = o;
+          }
+        });
+        return found;
+      }
+
+      // Look-at mouse
+      let mouseX = 0, mouseY = 0;
+      window.addEventListener("mousemove", (e)=>{
+        mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+        mouseY = (e.clientY / window.innerHeight) * 2 - 1;
+      });
+
+      // Resize
+      function resize(){
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        renderer.setSize(w, h, false);
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        camera.lookAt(target);
+      }
+      window.addEventListener("resize", resize);
+      resize();
+
+      // Scroll narrative (GSAP)
+      if(ENABLE_SCROLL && window.gsap && window.ScrollTrigger){
+        gsap.registerPlugin(ScrollTrigger);
+
+        const tl = gsap.timeline({
+          scrollTrigger:{
+            trigger: document.getElementById("home"),
+            start: "top top",
+            end: "bottom top",
+            scrub: true
+          }
+        });
+
+        // camera move to projects
+        tl.to(camera.position, { x: 0.0, y: 1.55, z: 2.35, duration: 1 }, 0);
+
+        // avatar turn to face (if loaded)
+        tl.to({}, { duration: 1, onUpdate: () => {
+          if(avatar){
+            // rotate from back-facing to front-facing as we scroll out of hero
+            const p = tl.progress();
+            avatar.rotation.y = Math.PI * (1 - p); // 180° -> 0°
+          }
+        }}, 0);
+
+        // "fall" transition near the end (subtle drop + roll)
+        tl.to(camera.position, { y: 1.25, z: 2.05, duration: 0.35 }, 0.75);
+        tl.to(camera.rotation, { x: -0.06, z: 0.02, duration: 0.35 }, 0.75);
+
+        // Contact: enable look-at
+        ScrollTrigger.create({
+          trigger: document.getElementById("contact"),
+          start: "top 60%",
+          end: "bottom 40%",
+          onEnter: ()=> stage.dataset.mode = "contact",
+          onEnterBack: ()=> stage.dataset.mode = "contact",
+          onLeave: ()=> stage.dataset.mode = "default",
+          onLeaveBack: ()=> stage.dataset.mode = "default",
+        });
+      }
+
+      // Project "present" gesture (procedural) when modal opens
+      // We'll listen to custom events (dispatched by openModal).
+      let present = 0;
+      if(ENABLE_INTERACTION){
+        window.addEventListener("project:open", ()=>{ present = 1; });
+        window.addEventListener("project:close", ()=>{ present = 0; });
+      }
+
+      // Code texture scrolling
+      const codeLines = [
+        "class Agent:",
+        "  def plan(self, goal):",
+        "    steps = self.decompose(goal)",
+        "    return self.validate(steps)",
+        "",
+        "state = { needs, goals, memory }",
+        "while True:",
+        "  obs = sense()",
+        "  act = agent.decide(obs, state)",
+        "  if safe(act): execute(act)",
+        "  state = update(state, obs, act)",
+        "",
+        "def route(task):",
+        "  tools = registry.match(task)",
+        "  return select(tools, task)",
+        "",
+        "memory.push(obs, act, result)",
+        "if drift_detected():",
+        "  calibrate(model, memory)",
+        "",
+        "policy = compose(",
+        "  safety_guard,",
+        "  planner,",
+        "  tool_router,",
+        "  verifier",
+        ")",
+        "",
+        "for step in steps:",
+        "  ctx = retrieve(step)",
+        "  draft = policy(step, ctx)",
+        "  result = run(draft)",
+        "  if not result.ok:",
+        "    backtrack(step)",
+        "",
+        "def verify(output):",
+        "  checks = [lint, tests, evals]",
+        "  return all(c(output) for c in checks)",
+        "",
+        "if latency > budget:",
+        "  cache(ctx)",
+        "  prune(tokens)",
+        "",
+        "emit(trace, metrics)",
+      ];
+      let scroll = 0;
+      let codeFrame = 0;
+
+      function drawCode(){
+        if(!ENABLE_SCREEN_CODE || !cctx || !codeCanvas || !tex) return;
+        if(CODE_UPDATE_EVERY > 1){
+          codeFrame = (codeFrame + 1) % CODE_UPDATE_EVERY;
+          if(codeFrame !== 0) return;
+        }
+        cctx.clearRect(0,0,codeCanvas.width, codeCanvas.height);
+        cctx.fillStyle = "rgba(6, 10, 8, 0.96)";
+        cctx.fillRect(0,0,codeCanvas.width, codeCanvas.height);
+
+        // glow header
+        cctx.fillStyle = "rgba(30, 120, 80, 0.18)";
+        cctx.fillRect(0,0,codeCanvas.width, 60);
+
+        cctx.font = "18px ui-monospace";
+        cctx.fillStyle = "rgba(120, 255, 190, 0.92)";
+
+        const lineH = 26;
+        scroll = (scroll + 0.6) % (lineH * codeLines.length);
+        const baseY = 80 - scroll;
+
+        for(let i=0;i<codeLines.length;i++){
+          const y = baseY + i*lineH;
+          if(y < -20 || y > codeCanvas.height + 20) continue;
+          cctx.fillText(codeLines[i], 26, y);
+        }
+        // cursor
+        const t = performance.now()*0.001;
+        if(Math.floor(t*2)%2===0){
+          cctx.fillStyle = "rgba(140, 255, 200, 0.95)";
+          cctx.fillRect(26 + 10*16, 80 + 6*lineH - scroll - 16, 10, 18);
+        }
+        // subtle scanlines
+        cctx.fillStyle = "rgba(0,0,0,0.08)";
+        for(let y=0;y<codeCanvas.height;y+=4){
+          cctx.fillRect(0, y, codeCanvas.width, 1);
+        }
+        tex.needsUpdate = true;
+      }
+
+      function animate(now){
+        drawCode();
+        if(debugCube){
+          debugCube.rotation.x += 0.005;
+          debugCube.rotation.y += 0.01;
+        }
+        if(mixer){
+          mixer.update(clock.getDelta());
+        }
+
+        // idle + contact look-at
+        if(avatar && ENABLE_INTERACTION){
+          const time = now * 0.001;
+          avatar.position.y = Math.sin(time * 1.2) * 0.01;
+
+          // Procedural "present" pose
+          const armR = findBone([/rightarm/, /arm_r/, /r_arm/, /mixamorig:rightarm/, /upperarm_r/]);
+          const foreR = findBone([/rightforearm/, /forearm_r/, /r_forearm/, /mixamorig:rightforearm/, /lowerarm_r/]);
+          if(armR){
+            armR.rotation.z = THREE.MathUtils.lerp(armR.rotation.z, present ? -0.55 : 0.0, 0.08);
+            armR.rotation.x = THREE.MathUtils.lerp(armR.rotation.x, present ? -0.25 : 0.0, 0.08);
+          }
+          if(foreR){
+            foreR.rotation.z = THREE.MathUtils.lerp(foreR.rotation.z, present ? -0.35 : 0.0, 0.08);
+          }
+
+          // Look-at in contact mode
+          if(stage.dataset.mode === "contact"){
+            const head = findBone([/head/, /mixamorig:head/]);
+            if(head){
+              head.rotation.y = THREE.MathUtils.lerp(head.rotation.y, mouseX*0.25, 0.06);
+              head.rotation.x = THREE.MathUtils.lerp(head.rotation.x, -mouseY*0.18, 0.06);
+            }else{
+              avatar.rotation.y = THREE.MathUtils.lerp(avatar.rotation.y, mouseX*0.15, 0.02);
+            }
+          }
+        }
+
+        renderer.render(scene, camera);
+        requestAnimationFrame(animate);
+      }
+      requestAnimationFrame(animate);
+      };
+
+      Promise.all([
+        import("three"),
+        import("three/examples/jsm/loaders/GLTFLoader.js"),
+        import("three/examples/jsm/loaders/FBXLoader.js")
+      ]).then(([THREE, { GLTFLoader }, { FBXLoader }]) => {
+        start(THREE, GLTFLoader, FBXLoader);
+      }).catch((err)=>{
+        console.error("[3D] init failed", err);
+      });
+    })();
+
+    document.getElementById("year").textContent = new Date().getFullYear();
+    renderGrid();
+  </script>
+</body>
+</html>
