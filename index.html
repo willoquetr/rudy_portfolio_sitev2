@@ -348,7 +348,7 @@
   <div id="stage3d" aria-hidden="true"></div>
   <div id="stageLoader" class="stageLoader" aria-live="polite">
     <div class="stageLoaderInner">
-      <div class="stageLoaderLabel">Chargement de la sc?ne 3D?</div>
+      <div class="stageLoaderLabel">Chargement de la scène 3D…</div>
       <div class="stageLoaderBar"><span class="stageLoaderFill"></span></div>
       <div class="stageLoaderMeta">
         <span data-progress-percent>0%</span>
@@ -470,7 +470,7 @@
   </div>
   <div class="lightboxBack" id="lightboxBack" aria-hidden="true">
     <div class="lightbox" role="dialog" aria-modal="true" aria-label="Agrandir capture">
-      <button class="closeBtn" id="lightboxClose">ESC â€¢ Fermer</button>
+      <button class="closeBtn" id="lightboxClose">ESC • Fermer</button>
       <img id="lightboxImg" alt="" />
       <div class="lightboxCaption" id="lightboxCaption"></div>
     </div>
@@ -861,7 +861,7 @@
         if(loaderFill) loaderFill.style.width = `${pct}%`;
         if(loaderPercent) loaderPercent.textContent = `${pct}%`;
         if(loaderCount) loaderCount.textContent = `${loadDone}/${loadTotal}`;
-        if(loaderLabel) loaderLabel.textContent = `Chargement de la sc?ne 3D? ${pct}%`;
+        if(loaderLabel) loaderLabel.textContent = `Chargement de la scène 3D… ${pct}%`;
       };
       const addLoad = (n = 1)=>{
         loadTotal += n;
@@ -1420,7 +1420,7 @@
           (err) => {
             console.error("[3D] room load error", err);
             doneLoad();
-            if(loaderLabel) loaderLabel.textContent = "Erreur de chargement de la sc?ne 3D";
+            if(loaderLabel) loaderLabel.textContent = "Erreur de chargement de la scène 3D";
           }
         );
       }
